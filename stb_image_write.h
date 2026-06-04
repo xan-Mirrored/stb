@@ -757,60 +757,18 @@ static void stbiw__write_hdr_scanline(stbi__write_context *s, int width, int nco
    }
 }
 
-static struct
-{
-   short temp; // temp field to force 2-byte alignment
-   char pair[201];
-} stbiw__u32_to_str_digitpairs =
-{
-  0,
-   "00010203040506070809101112131415161718192021222324"
-   "25262728293031323334353637383940414243444546474849"
-   "50515253545556575859606162636465666768697071727374"
-   "75767778798081828384858687888990919293949596979899"
-};
-
 static int stbiw__u32_to_string(unsigned int value, char* dest)
 {
-   short num[6];  // temp storage for 2-byte alignment
-   char* s;
+   char buff[12] = {0};
+   char* s = &buff[11];
    int len = 0;
 
-   if (value == 0) {
-      *dest = '0';
-      return 1;
-   }
+   do {
+      *--s = '0' + (value % 10);
+   } while(value /= 10);
 
-   if (value < 100000000)
-   {
-      if (value <= 9999) {
-         if (value <= 99) {
-            len = (value > 9) ? 2 : 1;
-         } else {
-            len = (value > 999) ? 4 : 3;
-         }
-      } else {
-         if (value > 999999) {
-            len = (value > 9999999) ? 8 : 7;
-         } else {
-            len = (value > 99999) ? 6 : 5;
-         }
-      }
-   } else {
-      len = (value < 1000000000) ? 9 : 10;
-   }
-
-   s = ((char*)num) + len + (len % 2);
-   while (value > 9) {
-      s -= 2;
-      *(unsigned short*)s = *(unsigned short*)&stbiw__u32_to_str_digitpairs.pair[(value % 100) * 2];
-      value /= 100;
-   }
-   if (value) {
-      *--s = '0' + value;
-   }
+   len = 11 - (s - buff);
    memcpy(dest, s, len);
-
    return len;
 }
 
