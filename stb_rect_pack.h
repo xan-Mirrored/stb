@@ -1,4 +1,4 @@
-// stb_rect_pack.h - v1.01 - public domain - rectangle packing
+// stb_rect_pack.h - v1.02 - public domain - rectangle packing
 // Sean Barrett 2014
 //
 // Useful for e.g. packing rectangular textures into an atlas.
@@ -38,9 +38,11 @@
 //  Bugfixes / warning fixes
 //    Jeremy Jaussaud
 //    Fabian Giesen
+//    Robert Hrusecky
 //
 // Version history:
 //
+//     1.02  (          )  fix corner case in best-fit waste calculation 
 //     1.01  (2021-07-11)  always use large rect mode, expose STBRP__MAXVAL in public section
 //     1.00  (2019-02-25)  avoid small space waste; gracefully fail too-wide rectangles
 //     0.99  (2019-02-07)  warning fixes
@@ -304,21 +306,20 @@ static int stbrp__skyline_find_min_y(stbrp_context *c, stbrp_node *first, int x0
 
    STBRP_ASSERT(node->x <= x0);
 
-   min_y = 0;
+   // handle the first node before entering the loop
+   min_y = node->y;
    waste_area = 0;
-   visited_width = 0;
+   // the first time through, visited_width might be reduced
+   visited_width = node->next->x - x0;
+   node = node->next;
    while (node->x < x1) {
       if (node->y > min_y) {
          // raise min_y higher.
          // we've accounted for all waste up to min_y,
-         // but we'll now add more waste for everything we've visted
+         // but we'll now add more waste for everything we've visited
          waste_area += visited_width * (node->y - min_y);
          min_y = node->y;
-         // the first time through, visited_width might be reduced
-         if (node->x < x0)
-            visited_width += node->next->x - x0;
-         else
-            visited_width += node->next->x - node->x;
+         visited_width += node->next->x - node->x;
       } else {
          // add waste area
          int under_width = node->next->x - node->x;
