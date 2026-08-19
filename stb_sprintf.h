@@ -511,6 +511,8 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
          ++f;
          if (f[0] == '*') {
             pr = va_arg(va, stbsp__uint32);
+            if (pr < 0)
+               pr = -1; // a negative precision from '*' is taken as if precision were omitted
             ++f;
          } else {
             pr = 0;

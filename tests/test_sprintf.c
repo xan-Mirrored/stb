@@ -85,6 +85,7 @@ int main()
    CHECK2("0.0       ", "%-10.1f", 0.);
    CHECK2("-0.000000", "%f", -0.);
    CHECK2("0.000001", "%f", 9.09834e-07);
+   CHECK4("0.290000", "%0*.*f", 6, -6, 0.29); // negative precision from '*' is taken as omitted
 #if USE_STB  // rounding differences
    CHECK2("38685626227668133600000000.0", "%.1f", pow_2_85);
    CHECK2("0.000000499999999999999978", "%.24f", 5e-7);
